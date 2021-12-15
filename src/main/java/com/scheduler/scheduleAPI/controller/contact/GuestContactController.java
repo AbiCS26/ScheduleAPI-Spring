@@ -50,7 +50,7 @@ public class GuestContactController {
 
     @PutMapping(value = "/{id}")
     @PreAuthorize("hasAuthority('contact:write')")
-    public ResponseEntity postGuestContact(@PathVariable String id, @RequestBody Contact contact) {
+    public ResponseEntity putGuestContact(@PathVariable String id, @RequestBody Contact contact) {
         return responseHandler.generateResponse(
                 "Contact modified successfully",
                 HttpStatus.OK,
@@ -60,8 +60,8 @@ public class GuestContactController {
 
     @DeleteMapping(value = "/{id}")
     @PreAuthorize("hasAuthority('contact:write')")
-    public ResponseEntity postGuestContact(@PathVariable String id) {
-        guestContactService.deleteGuestContact(id);
+    public ResponseEntity deleteGuestContact(@PathVariable String id) {
+        guestContactService.deleteGuestContactById(id);
 
         return responseHandler.generateResponse(
                 "Contact deleted successfully",

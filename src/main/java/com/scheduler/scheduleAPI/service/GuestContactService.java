@@ -1,6 +1,7 @@
 package com.scheduler.scheduleAPI.service;
 
 import com.scheduler.scheduleAPI.model.Contact;
+import com.scheduler.scheduleAPI.service.datastoreoperations.ContactOperations;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -9,23 +10,23 @@ import java.util.List;
 public class GuestContactService {
 
     public String storeGuestContact(Contact contact) {
-        return DatastoreOperations.storeContact(buildNewGuestContact(contact));
+        return ContactOperations.storeContact(buildNewGuestContact(contact));
     }
 
-    public Object modifyGuestContact(Contact contact, String id) {
-        return DatastoreOperations.storeContact(buildModifiedGuestContact(contact, id));
+    public String modifyGuestContact(Contact contact, String id) {
+        return ContactOperations.storeContact(buildModifiedGuestContact(contact, id));
     }
 
-    public void deleteGuestContact(String id) {
-        DatastoreOperations.deleteContactById(id);
+    public void deleteGuestContactById(String id) {
+        ContactOperations.deleteContactById(id);
     }
 
     public List<Contact> getAllContacts() {
-        return DatastoreOperations.getAllContactEntities();
+        return ContactOperations.getAllContactEntities();
     }
 
     public Contact getContactById(String id) {
-        return DatastoreOperations.getContactEntityById(id);
+        return ContactOperations.getContactEntityById(id);
     }
 
 

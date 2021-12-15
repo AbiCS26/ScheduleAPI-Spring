@@ -2,6 +2,8 @@ package com.scheduler.scheduleAPI.service;
 
 import com.scheduler.scheduleAPI.model.Contact;
 import com.scheduler.scheduleAPI.model.Event;
+import com.scheduler.scheduleAPI.service.datastoreoperations.ContactOperations;
+import com.scheduler.scheduleAPI.service.datastoreoperations.EventOperations;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -12,11 +14,11 @@ import java.util.List;
 public class EventService {
 
     public void deleteEvent(String id) {
-        DatastoreOperations.deleteEventById(id);
+        EventOperations.deleteEventById(id);
     }
 
     public List<Event> getAllEvents() {
-        List<Event> eventList = DatastoreOperations.getAllEventEntities();
+        List<Event> eventList = EventOperations.getAllEventEntities();
         List<Event> list = new ArrayList<>();
 
         for (Event event : eventList) {
@@ -28,15 +30,15 @@ public class EventService {
     }
 
     public String storeEvent(Event event) {
-        return DatastoreOperations.storeEvent(buildNewEvent(event));
+        return EventOperations.storeEvent(buildNewEvent(event));
     }
 
     public String modifyEvent(String id, Event event) {
-        return DatastoreOperations.storeEvent(buildModifiedEvent(event, id));
+        return EventOperations.storeEvent(buildModifiedEvent(event, id));
     }
 
     public Event getEventById(String id) {
-        Event event = DatastoreOperations.getEventEntityById(id);
+        Event event = EventOperations.getEventEntityById(id);
         if (event == null)
             throw new InputMismatchException("Enter valid ID");
         event.setParticipants(getListOfParticipants(event.getParticipantIds()));
@@ -45,31 +47,31 @@ public class EventService {
     }
 
     public List<Event> getEventByTimeRange(String start, String end) {
-        return DatastoreOperations.getEntitiesByTimeRange(start, end);
+        return EventOperations.getEventEntitiesByTimeRange(start, end);
     }
 
     public List<Event> getEventsSortedById() {
-        return DatastoreOperations.getEntitiesSortedById();
+        return EventOperations.getEventEntitiesSortedById();
     }
 
     public List<Event> getEventsSortedByDuration() {
-        return DatastoreOperations.getEntitiesSortedByDuration();
+        return EventOperations.getEventEntitiesSortedByDuration();
     }
 
     public List<Event> getEventsSortedByCreatedTime() {
-        return DatastoreOperations.getEntitiesSortedByCreatedTime();
+        return EventOperations.getEventEntitiesSortedByCreatedTime();
     }
 
     public List<Event> getEventsSortedByStartTime() {
-        return DatastoreOperations.getEntitiesSortedByStartTime();
+        return EventOperations.getEventEntitiesSortedByStartTime();
     }
 
     public List<Event> getEventsSortedByNumberOfParticipants() {
-        return DatastoreOperations.getEntitiesSortedByNumberOfParticipants();
+        return EventOperations.getEventEntitiesSortedByNumberOfParticipants();
     }
 
     public List<Contact> getEventByEmail(String email) {
-        return DatastoreOperations.getEntityByEmail(email);
+        return EventOperations.getEventEntityByEmail(email);
     }
 
 
@@ -85,7 +87,7 @@ public class EventService {
     }
 
     public Event buildModifiedEvent(Event e, String id) {
-        long createdTime = DatastoreOperations.getEventEntityById(id).getCreatedDate();
+        long createdTime = EventOperations.getEventEntityById(id).getCreatedDate();
 
         return Event.newBuilder()
                 .setName(e.getName())
@@ -102,7 +104,7 @@ public class EventService {
         List<Contact> list = new ArrayList<>();
         for (String s : participants) {
             list.add(
-                    DatastoreOperations.getContactsEntity(s)
+                    ContactOperations.getContactsEntity(s)
             );
         }
         return list;

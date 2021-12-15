@@ -2,6 +2,7 @@ package com.scheduler.scheduleAPI.model;
 
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
+import inputs.IdGenerator;
 
 @Entity
 public class Calendar {
@@ -12,7 +13,14 @@ public class Calendar {
     private DateFormat dateFormat;
 
 
-    private enum DateFormat {
+    public Calendar(Builder builder) {
+        this.id = builder.id;
+        this.timezone = builder.timezone;
+        this.dateFormat = builder.dateFormat;
+        this.timeFormat = builder.timeFormat;
+    }
+
+    public enum DateFormat {
         DATE_MONTH_YEAR("dd/MM/yyyy"),
         MONTH_DATE_YEAR("MM/dd/yyyy");
 
@@ -27,7 +35,7 @@ public class Calendar {
         }
     }
 
-    private enum TimeFormat {
+    public enum TimeFormat {
         TWENTY_FOUR_HOURS("HH:mm"),
         TWELVE_HOURS("hh:mm a");
 
@@ -42,13 +50,6 @@ public class Calendar {
         }
     }
 
-    public Calendar(Builder builder) {
-        this.id = builder.id;
-        this.timezone = builder.timezone;
-        this.dateFormat = builder.dateFormat;
-        this.timeFormat = builder.timeFormat;
-    }
-
     public Calendar() {
     }
 
@@ -60,12 +61,28 @@ public class Calendar {
         return timezone;
     }
 
+    public static Builder newBuilder() {
+        return new Builder();
+    }
 
-    public class Builder {
+    public String getTimeFormat() {
+        return timeFormat.getFormat();
+    }
+
+    public String getDateFormat() {
+        return dateFormat.getFormat();
+    }
+
+    public static class Builder {
         private String id;
         private String timezone;
         private TimeFormat timeFormat;
         private DateFormat dateFormat;
+
+        public Builder setId() {
+            this.id = IdGenerator.generateID();
+            return this;
+        }
 
         public Builder setId(String id) {
             this.id = id;

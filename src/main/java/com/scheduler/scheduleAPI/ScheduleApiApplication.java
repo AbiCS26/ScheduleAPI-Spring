@@ -3,6 +3,7 @@ package com.scheduler.scheduleAPI;
 import com.google.cloud.datastore.DatastoreOptions;
 import com.googlecode.objectify.ObjectifyFactory;
 import com.googlecode.objectify.ObjectifyService;
+import com.scheduler.scheduleAPI.model.Calendar;
 import com.scheduler.scheduleAPI.model.Contact;
 import com.scheduler.scheduleAPI.model.Event;
 import org.springframework.boot.SpringApplication;
@@ -21,6 +22,7 @@ public class ScheduleApiApplication {
         ));
         ObjectifyService.register(Event.class);
         ObjectifyService.register(Contact.class);
+        ObjectifyService.register(Calendar.class);
     }
 
 

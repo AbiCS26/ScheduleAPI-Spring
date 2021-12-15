@@ -14,12 +14,4 @@ public class ObjectifyConfiguration {
         registration.addUrlPatterns("/*");
         return registration;
     }
-
-//    @Bean
-//    public FilterRegistrationBean<CredentialValidatorFilter> credentialValidateRegistration() {
-//        final FilterRegistrationBean registrationBean = new FilterRegistrationBean();
-//        registrationBean.setFilter(new CredentialValidatorFilter());
-//        registrationBean.addUrlPatterns("/*");
-//        return registrationBean;
-//    }
 }

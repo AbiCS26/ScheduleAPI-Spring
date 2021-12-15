@@ -1,4 +1,4 @@
-package com.scheduler.scheduleAPI.controller;
+package com.scheduler.scheduleAPI.controller.event;
 
 import com.scheduler.scheduleAPI.model.Event;
 import com.scheduler.scheduleAPI.response.ResponseHandler;
@@ -6,6 +6,7 @@ import com.scheduler.scheduleAPI.service.EventService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -18,6 +19,7 @@ public class EventController {
     private ResponseHandler responseHandler;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ROLE_GUEST','ROLE_OWNER')")
     public ResponseEntity getEvents() {
         return responseHandler.generateResponse(
                 "All Events Received",
@@ -27,6 +29,7 @@ public class EventController {
     }
 
     @GetMapping(value = "/{id}")
+    @PreAuthorize("hasAnyRole('ROLE_GUEST','ROLE_OWNER')")
     public ResponseEntity getEvent(@PathVariable String id) {
         return responseHandler.generateResponse(
                 "Event Retrieved by ID",
@@ -36,6 +39,7 @@ public class EventController {
     }
 
     @GetMapping(value = "/email/{email}")
+    @PreAuthorize("hasAnyRole('ROLE_GUEST','ROLE_OWNER')")
     public ResponseEntity getEventByEmail(@PathVariable String email) {
         return responseHandler.generateResponse(
                 "Event Retrieved by email",
@@ -45,6 +49,7 @@ public class EventController {
     }
 
     @GetMapping(value = "/timeRange/{start}/{end}")
+    @PreAuthorize("hasAnyRole('ROLE_GUEST','ROLE_OWNER')")
     public ResponseEntity getEventByTime(@PathVariable("start") String start, @PathVariable("end") String end) {
         return responseHandler.generateResponse(
                 "Event Retrieved by email",
@@ -54,6 +59,7 @@ public class EventController {
     }
 
     @GetMapping(value = "/sortById")
+    @PreAuthorize("hasAnyRole('ROLE_GUEST','ROLE_OWNER')")
     public ResponseEntity sortEventById() {
         return responseHandler.generateResponse(
                 "Event Sorted by ID",
@@ -63,6 +69,7 @@ public class EventController {
     }
 
     @GetMapping(value = "/sortByDuration")
+    @PreAuthorize("hasAnyRole('ROLE_GUEST','ROLE_OWNER')")
     public ResponseEntity sortEventByDuration() {
         return responseHandler.generateResponse(
                 "Event Sorted by Duration",
@@ -72,6 +79,7 @@ public class EventController {
     }
 
     @GetMapping(value = "/sortByCreatedDate")
+    @PreAuthorize("hasAnyRole('ROLE_GUEST','ROLE_OWNER')")
     public ResponseEntity sortEventByCreatedTime() {
         return responseHandler.generateResponse(
                 "Event Sorted by Created Time",
@@ -81,6 +89,7 @@ public class EventController {
     }
 
     @GetMapping(value = "/sortByStartTime")
+    @PreAuthorize("hasAnyRole('ROLE_GUEST','ROLE_OWNER')")
     public ResponseEntity sortEventByStartTime() {
         return responseHandler.generateResponse(
                 "Event Sorted by Start Time",
@@ -90,6 +99,7 @@ public class EventController {
     }
 
     @GetMapping(value = "/sortByNumberOfParticipants")
+    @PreAuthorize("hasAnyRole('ROLE_GUEST','ROLE_OWNER')")
     public ResponseEntity sortEventByNumberOfParticipants() {
         return responseHandler.generateResponse(
                 "Event Sorted by number of participants",
@@ -99,6 +109,7 @@ public class EventController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('event:write')")
     public ResponseEntity postEvent(@RequestBody Event event) {
         return responseHandler.generateResponse(
                 "Event stored successfully",
@@ -108,6 +119,7 @@ public class EventController {
     }
 
     @PutMapping(value = "/{id}")
+    @PreAuthorize("hasAuthority('event:write')")
     public ResponseEntity putEvent(@PathVariable String id, @RequestBody Event event) {
         return responseHandler.generateResponse(
                 "Event Modified successfully",
@@ -117,6 +129,7 @@ public class EventController {
     }
 
     @DeleteMapping(value = "/{id}")
+    @PreAuthorize("hasAuthority('event:write')")
     public ResponseEntity deleteEvent(@PathVariable String id) {
         eventsService.deleteEvent(id);
 

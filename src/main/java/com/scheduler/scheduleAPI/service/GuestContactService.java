@@ -1,14 +1,12 @@
 package com.scheduler.scheduleAPI.service;
 
-import com.google.cloud.datastore.Entity;
 import com.scheduler.scheduleAPI.model.Contact;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class ContactService {
+public class GuestContactService {
 
     public String storeGuestContact(Contact contact) {
         return DatastoreOperations.storeContact(buildNewGuestContact(contact));
@@ -18,12 +16,26 @@ public class ContactService {
         return DatastoreOperations.storeContact(buildModifiedGuestContact(contact, id));
     }
 
+    public void deleteGuestContact(String id) {
+        DatastoreOperations.deleteContactById(id);
+    }
+
+    public List<Contact> getAllContacts() {
+        return DatastoreOperations.getAllContactEntities();
+    }
+
+    public Contact getContactById(String id) {
+        return DatastoreOperations.getContactEntityById(id);
+    }
+
+
     private Contact buildNewGuestContact(Contact contact) {
         return Contact.newBuilder()
                 .setId()
                 .setName(contact.getName())
                 .setEmail(contact.getEmail())
                 .setMobileNumber(contact.getMobileNumber())
+                .setPassword(contact.getPassword())
                 .setGuestRole()
                 .build();
     }
@@ -36,24 +48,5 @@ public class ContactService {
                 .setMobileNumber(contact.getMobileNumber())
                 .setGuestRole()
                 .build();
-    }
-
-    public void deleteGuestContact(String id) {
-        DatastoreOperations.deleteContactById(id);
-    }
-
-    public List<Contact> getAllContacts() {
-        List<Entity> entityList = DatastoreOperations.getAllContactEntities();
-        List<Contact> list = new ArrayList<>();
-
-        for (Entity entity : entityList) {
-            list.add(new Contact().convertEntityToContact(entity));
-        }
-        return list;
-    }
-
-    public Contact getContactById(String id) {
-        Entity entity = DatastoreOperations.getContactEntityById(id);
-        return new Contact().convertEntityToContact(entity);
     }
 }

@@ -1,1 +1,6 @@
 indexes:
+  - kind: Event
+    properties:
+      - name: __key__
+        direction: desc
+

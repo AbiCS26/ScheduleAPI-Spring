@@ -1,23 +1,27 @@
 package com.scheduler.scheduleAPI.model;
 
 
-import com.google.cloud.datastore.Entity;
+import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
+import com.googlecode.objectify.annotation.Index;
 import inputs.IdGenerator;
 import inputs.Validation;
 
 import java.util.Calendar;
 import java.util.List;
 
-@com.googlecode.objectify.annotation.Entity
+@Entity
 public class Event {
     private String name;
     @Id
     private String id;
     private List<Contact> participants;
     private List<String> participantIds;
+    @Index
     private long startsAt;
+    @Index
     private long duration;
+    @Index
     private long createdDate;
     private long modifiedDate;
 
@@ -28,11 +32,8 @@ public class Event {
         this.duration = builder.duration;
         this.createdDate = builder.createdDate;
         this.modifiedDate = builder.modifiedDate;
-
-        if (builder.participants == null)
-            this.participantIds = builder.participantIds;
-        else
-            this.participants = builder.participants;
+        this.participantIds = builder.participantIds;
+        this.participants = builder.participants;
     }
 
     public Event() {
@@ -75,18 +76,8 @@ public class Event {
     }
 
     public Event setParticipants(List<Contact> participants) {
-        this.participants = participants;
-        return this;
-    }
+        Validation.checkParticipantList(participants);
 
-    public Event convertEntityToEvent(Entity entity, List<Contact> participants) {
-
-        this.name = entity.getString("name");
-        this.id = entity.getKey().getName();
-        this.startsAt = entity.getLong("startsAt");
-        this.duration = (int) entity.getLong("duration");
-        this.createdDate = entity.getLong("createdDate");
-        this.modifiedDate = entity.getLong("modifiedDate");
         this.participants = participants;
         return this;
     }

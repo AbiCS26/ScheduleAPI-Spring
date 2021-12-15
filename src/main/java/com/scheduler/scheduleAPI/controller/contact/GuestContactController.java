@@ -1,61 +1,67 @@
-package com.scheduler.scheduleAPI.controller;
+package com.scheduler.scheduleAPI.controller.contact;
 
 import com.scheduler.scheduleAPI.model.Contact;
 import com.scheduler.scheduleAPI.response.ResponseHandler;
-import com.scheduler.scheduleAPI.service.ContactService;
+import com.scheduler.scheduleAPI.service.GuestContactService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(value = "/contacts")
-public class ContactController {
+@RequestMapping(value = "/contacts/guest")
+public class GuestContactController {
 
     @Autowired
-    private ContactService contactService;
+    private GuestContactService guestContactService;
     @Autowired
     private ResponseHandler responseHandler;
 
-    @GetMapping(value = "/guest")
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ROLE_GUEST','ROLE_OWNER')")
     public ResponseEntity getContacts() {
         return responseHandler.generateResponse(
                 "All Contacts Received",
                 HttpStatus.OK,
-                contactService.getAllContacts()
+                guestContactService.getAllContacts()
         );
     }
 
-    @GetMapping(value = "/guest/{id}")
+    @GetMapping(value = "/{id}")
+    @PreAuthorize("hasAnyRole('ROLE_GUEST','ROLE_OWNER')")
     public ResponseEntity getContact(@PathVariable String id) {
         return responseHandler.generateResponse(
                 "Contact Received",
                 HttpStatus.OK,
-                contactService.getContactById(id)
+                guestContactService.getContactById(id)
         );
     }
 
-    @PostMapping(value = "/guest")
+    @PostMapping
+    @PreAuthorize("hasAuthority('contact:write')")
     public ResponseEntity postGuestContact(@RequestBody Contact contact) {
         return responseHandler.generateResponse(
                 "Contact stored successfully",
                 HttpStatus.CREATED,
-                contactService.storeGuestContact(contact)
+                guestContactService.storeGuestContact(contact)
         );
     }
 
-    @PutMapping(value = "/guest/{id}")
+    @PutMapping(value = "/{id}")
+    @PreAuthorize("hasAuthority('contact:write')")
     public ResponseEntity postGuestContact(@PathVariable String id, @RequestBody Contact contact) {
         return responseHandler.generateResponse(
                 "Contact modified successfully",
                 HttpStatus.OK,
-                contactService.modifyGuestContact(contact, id)
+                guestContactService.modifyGuestContact(contact, id)
         );
     }
 
-    @DeleteMapping(value = "/guest/{id}")
+    @DeleteMapping(value = "/{id}")
+    @PreAuthorize("hasAuthority('contact:write')")
     public ResponseEntity postGuestContact(@PathVariable String id) {
-        contactService.deleteGuestContact(id);
+        guestContactService.deleteGuestContact(id);
 
         return responseHandler.generateResponse(
                 "Contact deleted successfully",

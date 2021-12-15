@@ -1,215 +1,106 @@
 package com.scheduler.scheduleAPI.service;
 
-import com.google.api.client.util.Lists;
-import com.google.cloud.datastore.*;
-import com.googlecode.objectify.ObjectifyService;
+import com.google.cloud.datastore.Datastore;
+import com.google.cloud.datastore.Entity;
+import com.google.cloud.datastore.Key;
 import com.scheduler.scheduleAPI.model.Contact;
 import com.scheduler.scheduleAPI.model.Event;
 import com.scheduler.scheduleAPI.storage.DataStorage;
 
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.InputMismatchException;
 import java.util.List;
+
+import static com.googlecode.objectify.ObjectifyService.ofy;
 
 public class DatastoreOperations {
     private static final Datastore datastore = DataStorage.getInstance();
-    private static final String KIND_NAME = "Event";
+
 
     public static String storeEvent(Event event) {
-        ObjectifyService.ofy().save().entity(event).now();
+        ofy().save().entity(event).now();
         return event.getId();
-//        KeyFactory keyFactory = datastore.newKeyFactory().setKind(KIND_NAME);
-//        Key key = keyFactory.newKey(event.getId());
-//
-//        Entity events = Entity.newBuilder(key)
-//                .set("name", event.getName())
-//                .set("participants", convertToValueList(event.getParticipantIds()))
-//                .set("startsAt", event.getStartsAt())
-//                .set("createdDate", event.getCreatedDate())
-//                .set("duration", event.getDuration())
-//                .set("modifiedDate", event.getModifiedDate())
-//                .build();
-//
-//        datastore.put(events);
-//        return key.getName();
     }
 
-//    public static String modifyEvent(Event event) {
-//        getEventEntityById(event.getId()).getLong("createdDate");
-
-//        KeyFactory keyFactory = datastore.newKeyFactory().setKind(KIND_NAME);
-//        Key key = keyFactory.newKey(event.getId());
-//
-//
-//        Entity events = Entity.newBuilder(key)
-//                .set("name", event.getName())
-//                .set("participants", convertToValueList(event.getParticipantIds()))
-//                .set("startsAt", event.getStartsAt())
-//                .set("createdDate", createdDate)
-//                .set("duration", event.getDuration())
-//                .set("modifiedDate", event.getModifiedDate())
-//                .build();
-//
-//        datastore.put(events);
-//        return key.getName();
-//}
 
     public static String storeContact(Contact contact) {
-        ObjectifyService.ofy().save().entity(contact).now();
+        ofy().save().entity(contact).now();
         return contact.getId();
-//        KeyFactory keyFactory = datastore.newKeyFactory()
-//                .setKind("Contacts");
-//        Key key = keyFactory.newKey(contact.getId());
-//
-//        Entity contacts = Entity.newBuilder(key)
-//                .set("name", contact.getName())
-//                .set("email", contact.getEmail())
-//                .set("mobileNumber", contact.getMobileNumber())
-//                .set("role", contact.getRole())
-//                .build();
-//
-//        datastore.put(contacts);
-//        return key.getName();
     }
 
     public static Event getEventEntityById(String id) {
-        return ObjectifyService.ofy().load().type(Event.class).id(id).now();
-
-//        Key key = datastore.newKeyFactory().setKind(KIND_NAME).newKey(id);
-//        Entity entity = datastore.get(key);
-//        if (entity == null)
-//            throw new InputMismatchException("Enter valid ID");
-//        return entity;
+        return ofy().load().type(Event.class).id(id).now();
     }
 
-    public static List<Entity> getAllEventEntities() {
-        Query<Entity> query = Query.newEntityQueryBuilder()
-                .setKind(KIND_NAME)
-                .build();
-
-        return Lists.newArrayList(datastore.run(query));
+    public static List<Event> getAllEventEntities() {
+        return ofy().load().type(Event.class).list();
     }
 
     public static Contact getContactsEntity(String id) {
-        return ObjectifyService.ofy().load().type(Contact.class).id(id).now();
-
-//        Key key = datastore.newKeyFactory().setKind("Contact").newKey(id);
-//        return datastore.get(key);
+        return ofy().load().type(Contact.class).id(id).now();
     }
 
     public static void deleteEventById(String id) {
-        Key key = datastore.newKeyFactory().setKind(KIND_NAME).newKey(id);
-        Entity entity = datastore.get(key);
-        if (entity == null)
-            throw new InputMismatchException("Enter valid ID");
 
-        datastore.delete(key);
+        ofy().delete().type(Event.class).id(id).now();
     }
 
-    public static List<Entity> getEntitiesByTimeRange(String start, String end) {
-        Query<Entity> query = Query.newEntityQueryBuilder()
-                .setKind(KIND_NAME)
-                .setFilter(StructuredQuery.CompositeFilter
-                        .and((StructuredQuery.PropertyFilter.ge("startsAt", start)),
-                                (StructuredQuery.PropertyFilter.le("startsAt", end))))
-                .build();
-        QueryResults<Entity> events = datastore.run(query);
-
-        return Lists.newArrayList(events);
+    public static List<Event> getEntitiesByTimeRange(String start, String end) {
+        return ofy().load().type(Event.class)
+                .filter("startsAt >=", Long.parseLong(start))
+                .filter("startsAt <=", Long.parseLong(end))
+                .list();
     }
 
-    public static List<Entity> getEntitiesSortedById() {
-        List<Entity> list = getAllEventEntities();
-        list.sort(getKeysSorter());
-        return list;
+    public static List<Event> getEntitiesSortedById() {
+        return ofy().load().type(Event.class).orderKey(true).list();
     }
 
-    public static List<Entity> getEntitiesSortedByDuration() {
-        Query<Entity> query = Query.newEntityQueryBuilder()
-                .setKind(KIND_NAME)
-                .setOrderBy(StructuredQuery.OrderBy.desc("duration"))
-                .build();
-
-        QueryResults<Entity> events = datastore.run(query);
-        return Lists.newArrayList(events);
+    public static List<Event> getEntitiesSortedByDuration() {
+        return ofy().load().type(Event.class).order("duration").list();
     }
 
-    public static List<Entity> getEntitiesSortedByCreatedTime() {
-        Query<Entity> query = Query.newEntityQueryBuilder()
-                .setKind(KIND_NAME)
-                .setOrderBy(StructuredQuery.OrderBy.desc("createdDate"))
-                .build();
-
-        QueryResults<Entity> events = datastore.run(query);
-        return Lists.newArrayList(events);
+    public static List<Event> getEntitiesSortedByCreatedTime() {
+        return ofy().load().type(Event.class).order("createdDate").list();
     }
 
-    public static List<Entity> getEntitiesSortedByStartTime() {
-        Query<Entity> query = Query.newEntityQueryBuilder()
-                .setKind(KIND_NAME)
-                .setOrderBy(StructuredQuery.OrderBy.desc("startsAt"))
-                .build();
+    public static List<Event> getEntitiesSortedByStartTime() {
 
-        QueryResults<Entity> events = datastore.run(query);
-        return Lists.newArrayList(events);
+        return ofy().load().type(Event.class).order("startsAt").list();
     }
 
-    public static List<Entity> getEntitiesSortedByNumberOfParticipants() {
+    public static List<Event> getEntitiesSortedByNumberOfParticipants() {
 
-        List<Entity> list = getAllEventEntities();
+        List<Event> list = getAllEventEntities();
         list.sort(getNoOfParticipantsSorter());
         return list;
     }
 
-    public static List<Entity> getEntityByEmail(String email) {
-        Query<Entity> query = Query.newEntityQueryBuilder()
-                .setKind("Contacts")
-                .setFilter(StructuredQuery.PropertyFilter.eq("email", email))
-                .build();
-        QueryResults<Entity> events = datastore.run(query);
-
-        return Lists.newArrayList(events);
+    public static List<Contact> getEntityByEmail(String email) {
+        return ofy().load().type(Contact.class).filter("email =", email).list();
     }
 
-    private static Comparator<Entity> getKeysSorter() {
-        return Comparator.comparing(o -> String.valueOf(o.getKey().getName()));
-    }
-
-    private static Comparator<Entity> getNoOfParticipantsSorter() {
-        return (o1, o2) -> Integer.compare(o2.getList("participants").size(), o1.getList("participants").size());
-    }
-
-    private static List<Value<String>> convertToValueList(List<String> list) {
-        List<Value<String>> result = new ArrayList<>();
-        for (String s : list) {
-            result.add(StringValue.of(s));
-        }
-        return result;
-    }
 
     public static void deleteContactById(String id) {
-        Key key = datastore.newKeyFactory().setKind("Contacts").newKey(id);
-        Entity entity = datastore.get(key);
-        if (entity == null)
-            throw new InputMismatchException("Enter valid ID");
-
-        datastore.delete(key);
+        ofy().delete().type(Contact.class).id(id).now();
     }
 
-    public static List<Entity> getAllContactEntities() {
-        Query<Entity> query = Query.newEntityQueryBuilder()
-                .setKind("Contacts")
-                .build();
-
-        return Lists.newArrayList(datastore.run(query));
+    public static List<Contact> getAllContactEntities() {
+        return ofy().load().type(Contact.class).list();
     }
 
-    public static Entity getContactEntityById(String id) {
-        Key key = datastore.newKeyFactory().setKind("Contacts").newKey(id);
+    public static Contact getContactEntityById(String id) {
+        System.out.println("In getContactEntityById");
+        return ofy().load().type(Contact.class).id(id).now();
+    }
+
+
+    private static Comparator<Event> getNoOfParticipantsSorter() {
+        return (o1, o2) -> Integer.compare(o2.getParticipantIds().size(), o1.getParticipantIds().size());
+    }
+
+    public static Entity getContactEntityByIdQuery(String id) {
+        Key key = datastore.newKeyFactory().setKind("Contact").newKey(id);
         Entity entity = datastore.get(key);
-        if (entity == null)
-            throw new InputMismatchException("Enter valid ID");
         return entity;
     }
 }

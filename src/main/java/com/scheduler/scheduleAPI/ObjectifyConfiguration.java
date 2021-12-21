@@ -14,4 +14,5 @@ public class ObjectifyConfiguration {
         registration.addUrlPatterns("/*");
         return registration;
     }
+
 }

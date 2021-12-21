@@ -1,20 +1,25 @@
 package com.scheduler.scheduleAPI.model;
 
 
-import com.googlecode.objectify.annotation.Entity;
-import com.googlecode.objectify.annotation.Id;
-import com.googlecode.objectify.annotation.Index;
+import com.google.appengine.api.datastore.Text;
+import com.googlecode.objectify.Key;
+import com.googlecode.objectify.annotation.*;
+import com.scheduler.scheduleAPI.service.ObjectifyOperations;
 import inputs.IdGenerator;
 import inputs.Validation;
 
 import java.util.Calendar;
 import java.util.List;
+import java.util.logging.Logger;
+
 
 @Entity
 public class Event {
-    private String name;
     @Id
     private String id;
+    private String createdBy;
+    private String name;
+
     private List<Contact> participants;
     private List<String> participantIds;
     @Index
@@ -24,6 +29,18 @@ public class Event {
     @Index
     private long createdDate;
     private long modifiedDate;
+    @Ignore
+    private String calendarId;
+    private Text description;
+
+
+    public String getCalendarId() {
+        return calendarId;
+    }
+
+    @Parent
+    private Key<com.scheduler.scheduleAPI.model.Calendar> calendar;
+
 
     public Event(Builder builder) {
         this.name = builder.name;
@@ -33,7 +50,9 @@ public class Event {
         this.createdDate = builder.createdDate;
         this.modifiedDate = builder.modifiedDate;
         this.participantIds = builder.participantIds;
-        this.participants = builder.participants;
+        this.calendar = builder.calendar;
+        this.description = builder.text;
+        this.createdBy = builder.createdBy;
     }
 
     public Event() {
@@ -82,20 +101,66 @@ public class Event {
         return this;
     }
 
+    public Text getDescription() {
+        return description;
+    }
+
+    public Event setParticipantIds(List<String> participantIds) {
+        Validation.checkParticipantIds(participantIds);
+        new ObjectifyOperations().checkForParticipants(participantIds);
+
+        this.participantIds = participantIds;
+        return this;
+    }
+
+    public String getCreatedBy() {
+        return createdBy;
+    }
+
+    @OnSave
+    void onSaveMethod() {
+        Logger logger = Logger.getLogger("EventLogger");
+        logger.info("Event saved Successfully");
+    }
+
+    @OnLoad
+    void onLoadMethod() {
+        Logger logger = Logger.getLogger("EventLogger");
+        logger.info("Event loaded Successfully");
+    }
 
     public static class Builder {
         private String name;
         private String id;
+        private String createdBy;
 
-        private List<Contact> participants;
         private long startsAt;
         private long duration;
         private long createdDate;
         private long modifiedDate;
         private List<String> participantIds;
+        private Key<com.scheduler.scheduleAPI.model.Calendar> calendar;
+        private Text text;
+
+        public Builder setText(Text text) {
+            this.text = text;
+            return this;
+        }
+
+        public Builder setCreatedBy(String createdBy) {
+            this.createdBy = createdBy;
+            return this;
+        }
+
+        public Builder setCalendar(String calendar) {
+            Validation.checkString(calendar, "Calendar ID");
+            this.calendar = Key.create(com.scheduler.scheduleAPI.model.Calendar.class, calendar);
+            return this;
+        }
 
         public Builder setParticipantIds(List<String> participantIds) {
             Validation.checkParticipantIds(participantIds);
+            new ObjectifyOperations().checkForParticipants(participantIds);
             this.participantIds = participantIds;
             return this;
         }
@@ -143,13 +208,6 @@ public class Event {
 
         public Builder setModifiedDate() {
             this.modifiedDate = System.currentTimeMillis();
-            return this;
-        }
-
-        public Builder setParticipants(List<Contact> participants) {
-            Validation.checkParticipantList(participants);
-
-            this.participants = participants;
             return this;
         }
 

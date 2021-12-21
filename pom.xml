@@ -56,6 +56,11 @@
             <version>31.0.1-jre</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>17</version>
+        </dependency>
 
     </dependencies>
 

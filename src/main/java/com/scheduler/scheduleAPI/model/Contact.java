@@ -10,25 +10,33 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Entity
 public class Contact {
+
+
     @Id
     private String id;
-    private String name;
     @Index
     private String email;
+    private String name;
     private String mobileNumber;
     private String password;
-    private UserRole role;
+    private String role;
+    private String ownerId;
 
     public Contact() {
+    }
+
+    public String getId() {
+        return id;
     }
 
     public Contact(Builder builder) {
         this.name = builder.name;
         this.email = builder.email;
         this.mobileNumber = builder.mobileNumber;
-        this.role = builder.role;
-        this.id = builder.id;
+        this.role = builder.role.name();
         this.password = builder.password;
+        this.ownerId = builder.ownerId;
+        this.id = builder.id;
     }
 
     public static Builder newBuilder() {
@@ -39,47 +47,49 @@ public class Contact {
         return name;
     }
 
-    public String getEmail() {
-        return email;
-    }
-
     public String getMobileNumber() {
         return mobileNumber;
     }
 
     public String getRole() {
-        return this.role.toString();
+        return role;
     }
 
-    public String getId() {
-        return id;
+    public String getEmail() {
+        return email;
     }
 
     public String getPassword() {
         return password;
     }
 
+    public String getOwnerId() {
+        return ownerId;
+    }
+
     public static class Builder {
         private String id;
-        private String name;
         private String email;
+        private String name;
         private String mobileNumber;
         private UserRole role;
         private String password;
+        private String ownerId;
 
-        public Builder setPassword(String password) {
-            String encryptedPassword = new BCryptPasswordEncoder().encode(password);
-            this.password = encryptedPassword;
-            return this;
-        }
-
-        public Builder setId(String id) {
-            this.id = id;
+        public Builder setOwnerId(String ownerId) {
+            this.ownerId = ownerId;
             return this;
         }
 
         public Builder setId() {
             this.id = IdGenerator.generateID();
+            return this;
+        }
+
+        public Builder setPassword(String password) {
+            Validation.checkPassword(password);
+            String encryptedPassword = new BCryptPasswordEncoder().encode(password);
+            this.password = encryptedPassword;
             return this;
         }
 
@@ -115,6 +125,11 @@ public class Contact {
 
         public Builder setOwnerRole() {
             this.role = UserRole.OWNER;
+            return this;
+        }
+
+        public Builder setId(String id) {
+            this.id = id;
             return this;
         }
     }

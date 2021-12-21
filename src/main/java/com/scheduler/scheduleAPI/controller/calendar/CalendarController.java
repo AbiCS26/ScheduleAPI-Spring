@@ -7,10 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(value = "/calendar")
+@RequestMapping(value = "/calendars")
 public class CalendarController {
 
     @Autowired
@@ -21,6 +22,8 @@ public class CalendarController {
     @GetMapping
     @PreAuthorize("hasAnyRole('ROLE_GUEST','ROLE_OWNER')")
     public ResponseEntity getAllCalendars() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        System.out.println(principal.toString());
         return responseHandler.generateResponse(
                 "All Calendars Received",
                 HttpStatus.OK,

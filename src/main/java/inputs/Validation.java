@@ -53,4 +53,11 @@ public class Validation {
         return true;
 
     }
+
+    public static boolean checkPassword(String password) {
+        checkString(password, "Password");
+        if (password.length() < 8)
+            throw new InputMismatchException("Password must contain 8 characters");
+        return true;
+    }
 }

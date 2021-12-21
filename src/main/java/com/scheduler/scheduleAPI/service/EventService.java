@@ -1,112 +1,124 @@
 package com.scheduler.scheduleAPI.service;
 
-import com.scheduler.scheduleAPI.model.Contact;
+import com.scheduler.scheduleAPI.exception.PermissionException;
 import com.scheduler.scheduleAPI.model.Event;
-import com.scheduler.scheduleAPI.service.datastoreoperations.ContactOperations;
-import com.scheduler.scheduleAPI.service.datastoreoperations.EventOperations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.List;
 
 @Service
 public class EventService {
 
-    public void deleteEvent(String id) {
-        EventOperations.deleteEventById(id);
+    @Autowired
+    private final ObjectifyOperations objectifyOperations;
+    @Autowired
+    private final MyUser myUser;
+
+    public EventService(ObjectifyOperations objectifyOperations, MyUser myUser) {
+        this.objectifyOperations = objectifyOperations;
+        this.myUser = myUser;
+    }
+
+    public void deleteEvent(String eventId, String calendarId) {
+        UserDetails userDetails = myUser.getCurrentUser();
+        Event event = objectifyOperations.getEventById(eventId, calendarId);
+
+        if (event == null)
+            throw new InputMismatchException("Event with ID: " + eventId + " is not present");
+
+        if (event.getCreatedBy().equals(userDetails.getUsername()))
+            objectifyOperations.deleteEntity(eventId, Event.class);
+        else
+            throw new PermissionException("User is not allowed to delete this event");
     }
 
     public List<Event> getAllEvents() {
-        List<Event> eventList = EventOperations.getAllEventEntities();
-        List<Event> list = new ArrayList<>();
-
-        for (Event event : eventList) {
-            list.add(
-                    event.setParticipants(getListOfParticipants(event.getParticipantIds()))
-            );
-        }
-        return list;
+        return objectifyOperations.getAllEntities(Event.class);
     }
 
-    public String storeEvent(Event event) {
-        return EventOperations.storeEvent(buildNewEvent(event));
+    public String storeEvent(Event e) {
+        Event event = buildNewEvent(e);
+        objectifyOperations.storeEntity(event);
+        return event.getId();
     }
 
-    public String modifyEvent(String id, Event event) {
-        return EventOperations.storeEvent(buildModifiedEvent(event, id));
+    public String modifyEvent(String eventId, String calendarId, Event e) {
+        Event event = buildModifiedEvent(eventId, calendarId, e);
+        objectifyOperations.storeEntity(event);
+        return event.getId();
     }
 
-    public Event getEventById(String id) {
-        Event event = EventOperations.getEventEntityById(id);
+    public Event getEventById(String eventId, String calendarId) {
+        Event event = objectifyOperations.getEventById(eventId, calendarId);
         if (event == null)
-            throw new InputMismatchException("Enter valid ID");
-        event.setParticipants(getListOfParticipants(event.getParticipantIds()));
-
+            throw new InputMismatchException("Event with ID: " + eventId + " is not present");
         return event;
     }
 
     public List<Event> getEventByTimeRange(String start, String end) {
-        return EventOperations.getEventEntitiesByTimeRange(start, end);
+        return objectifyOperations.getEventEntitiesByTimeRange(start, end);
     }
 
     public List<Event> getEventsSortedById() {
-        return EventOperations.getEventEntitiesSortedById();
+        return objectifyOperations.getEventEntitiesSortedById();
     }
 
     public List<Event> getEventsSortedByDuration() {
-        return EventOperations.getEventEntitiesSortedByDuration();
+        return objectifyOperations.getEventEntitiesSortedByDuration();
     }
 
     public List<Event> getEventsSortedByCreatedTime() {
-        return EventOperations.getEventEntitiesSortedByCreatedTime();
+        return objectifyOperations.getEventEntitiesSortedByCreatedTime();
     }
 
     public List<Event> getEventsSortedByStartTime() {
-        return EventOperations.getEventEntitiesSortedByStartTime();
+        return objectifyOperations.getEventEntitiesSortedByStartTime();
     }
 
     public List<Event> getEventsSortedByNumberOfParticipants() {
-        return EventOperations.getEventEntitiesSortedByNumberOfParticipants();
+        return objectifyOperations.getEventEntitiesSortedByNumberOfParticipants();
     }
 
-    public List<Contact> getEventByEmail(String email) {
-        return EventOperations.getEventEntityByEmail(email);
+    public List<Event> getEventByEmail(String email) {
+        return objectifyOperations.getEventEntityByEmail(email);
     }
 
 
     public Event buildNewEvent(Event e) {
+
         return Event.newBuilder()
+                .setId()
                 .setName(e.getName())
                 .setStartsAt(e.getStartsAt())
                 .setDuration(e.getDuration())
                 .setParticipantIds(e.getParticipantIds())
+                .setCalendar(e.getCalendarId())
+                .setText(e.getDescription())
+                .setCreatedBy(myUser.getCurrentUser().getUsername())
                 .setCreatedDate()
-                .setId()
                 .build();
     }
 
-    public Event buildModifiedEvent(Event e, String id) {
-        long createdTime = EventOperations.getEventEntityById(id).getCreatedDate();
+    public Event buildModifiedEvent(String eventId, String calendarId, Event e) {
+        long createdTime = objectifyOperations.getEventById(eventId, calendarId).getCreatedDate();
 
         return Event.newBuilder()
                 .setName(e.getName())
                 .setStartsAt(e.getStartsAt())
                 .setDuration(e.getDuration())
                 .setParticipantIds(e.getParticipantIds())
-                .setId(id)
+                .setId(eventId)
+                .setCalendar(calendarId)
+                .setCreatedBy(myUser.getCurrentUser().getUsername())
                 .setCreatedDate(createdTime)
                 .setModifiedDate()
                 .build();
     }
 
-    private List<Contact> getListOfParticipants(List<String> participants) {
-        List<Contact> list = new ArrayList<>();
-        for (String s : participants) {
-            list.add(
-                    ContactOperations.getContactsEntity(s)
-            );
-        }
-        return list;
+    public void addParticipants(String eventId, String calendarId, List<String> participants) {
+        objectifyOperations.transactParticipants(eventId, calendarId, participants);
     }
 }

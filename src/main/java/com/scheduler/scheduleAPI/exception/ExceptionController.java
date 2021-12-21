@@ -19,5 +19,10 @@ public class ExceptionController {
     public ResponseEntity exception(InputMismatchException exception) {
         return responseHandler.generateResponse(exception.getMessage(), HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(value = PermissionException.class)
+    public ResponseEntity exception(PermissionException exception) {
+        return responseHandler.generateResponse(exception.getMessage(), HttpStatus.UNAUTHORIZED);
+    }
 }
 

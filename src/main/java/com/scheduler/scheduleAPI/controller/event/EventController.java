@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping(value = "/events")
 public class EventController {
@@ -28,13 +30,14 @@ public class EventController {
         );
     }
 
-    @GetMapping(value = "/{id}")
+    @GetMapping(value = "/byId")
     @PreAuthorize("hasAnyRole('ROLE_GUEST','ROLE_OWNER')")
-    public ResponseEntity getEvent(@PathVariable String id) {
+    public ResponseEntity getEvent(@RequestParam(value = "eventId") String eventId,
+                                   @RequestParam(value = "calendarId") String calendarId) {
         return responseHandler.generateResponse(
                 "Event Retrieved by ID",
                 HttpStatus.OK,
-                eventsService.getEventById(id)
+                eventsService.getEventById(eventId, calendarId)
         );
     }
 
@@ -118,20 +121,35 @@ public class EventController {
         );
     }
 
-    @PutMapping(value = "/{id}")
+    @PutMapping
     @PreAuthorize("hasAuthority('event:write')")
-    public ResponseEntity putEvent(@PathVariable String id, @RequestBody Event event) {
+    public ResponseEntity putEvent(@RequestParam(value = "eventId") String eventId,
+                                   @RequestParam(value = "calendarId") String calendarId,
+                                   @RequestBody Event event) {
         return responseHandler.generateResponse(
                 "Event Modified successfully",
                 HttpStatus.OK,
-                eventsService.modifyEvent(id, event)
+                eventsService.modifyEvent(eventId, calendarId, event)
         );
     }
 
-    @DeleteMapping(value = "/{id}")
+    @PatchMapping(value = "/participants/{id}")
     @PreAuthorize("hasAuthority('event:write')")
-    public ResponseEntity deleteEvent(@PathVariable String id) {
-        eventsService.deleteEvent(id);
+    public ResponseEntity patchEvent(@RequestParam(value = "eventId") String eventId,
+                                     @RequestParam(value = "calendarId") String calendarId,
+                                     @RequestBody List<String> participantIds) {
+        eventsService.addParticipants(eventId, calendarId, participantIds);
+        return responseHandler.generateResponse(
+                "Participants Modified successfully",
+                HttpStatus.OK
+        );
+    }
+
+    @DeleteMapping
+    @PreAuthorize("hasAuthority('event:write')")
+    public ResponseEntity deleteEvent(@RequestParam(value = "eventId") String eventId,
+                                      @RequestParam(value = "calendarId") String calendarId) {
+        eventsService.deleteEvent(eventId, calendarId);
 
         return responseHandler.generateResponse(
                 "Event Deleted successfully",

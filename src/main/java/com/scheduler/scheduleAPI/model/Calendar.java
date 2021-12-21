@@ -4,20 +4,23 @@ import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
 import inputs.IdGenerator;
 
+import java.time.ZoneId;
+
 @Entity
 public class Calendar {
     @Id
     private String id;
     private String timezone;
-    private TimeFormat timeFormat;
-    private DateFormat dateFormat;
-
+    private String timeFormat;
+    private String dateFormat;
+    private String ownerId;
 
     public Calendar(Builder builder) {
         this.id = builder.id;
         this.timezone = builder.timezone;
-        this.dateFormat = builder.dateFormat;
-        this.timeFormat = builder.timeFormat;
+        this.dateFormat = builder.dateFormat.getFormat();
+        this.timeFormat = builder.timeFormat.getFormat();
+        this.ownerId = builder.ownerId;
     }
 
     public enum DateFormat {
@@ -53,6 +56,10 @@ public class Calendar {
     public Calendar() {
     }
 
+    public String getOwnerId() {
+        return ownerId;
+    }
+
     public String getId() {
         return id;
     }
@@ -66,11 +73,11 @@ public class Calendar {
     }
 
     public String getTimeFormat() {
-        return timeFormat.getFormat();
+        return timeFormat;
     }
 
     public String getDateFormat() {
-        return dateFormat.getFormat();
+        return dateFormat;
     }
 
     public static class Builder {
@@ -78,6 +85,12 @@ public class Calendar {
         private String timezone;
         private TimeFormat timeFormat;
         private DateFormat dateFormat;
+        private String ownerId;
+
+        public Builder setOwnerId(String ownerId) {
+            this.ownerId = ownerId;
+            return this;
+        }
 
         public Builder setId() {
             this.id = IdGenerator.generateID();
@@ -90,6 +103,7 @@ public class Calendar {
         }
 
         public Builder setTimezone(String timezone) {
+            ZoneId.of(timezone);
             this.timezone = timezone;
             return this;
         }

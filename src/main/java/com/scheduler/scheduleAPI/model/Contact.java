@@ -3,9 +3,9 @@ package com.scheduler.scheduleAPI.model;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Index;
+import com.scheduler.scheduleAPI.inputs.IdGenerator;
 import com.scheduler.scheduleAPI.security.UserRole;
-import inputs.IdGenerator;
-import inputs.Validation;
+import com.scheduler.scheduleAPI.validation.Validator;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Entity
@@ -87,28 +87,28 @@ public class Contact {
         }
 
         public Builder setPassword(String password) {
-            Validation.checkPassword(password);
+            Validator.checkPassword(password);
             String encryptedPassword = new BCryptPasswordEncoder().encode(password);
             this.password = encryptedPassword;
             return this;
         }
 
         public Builder setName(String name) {
-            Validation.checkString(name, "Participant Name");
+            Validator.checkString(name, "Participant Name");
 
             this.name = name;
             return this;
         }
 
         public Builder setEmail(String email) {
-            Validation.checkString(email, "Participant Email");
+            Validator.checkString(email, "Participant Email");
 
             this.email = email;
             return this;
         }
 
         public Builder setMobileNumber(String mobileNumber) {
-            Validation.checkMobileNumber(mobileNumber);
+            Validator.checkMobileNumber(mobileNumber);
 
             this.mobileNumber = mobileNumber;
             return this;

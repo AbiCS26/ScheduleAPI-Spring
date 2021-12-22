@@ -133,7 +133,7 @@ public class EventController {
         );
     }
 
-    @PatchMapping(value = "/participants/{id}")
+    @PatchMapping(value = "/participants")
     @PreAuthorize("hasAuthority('event:write')")
     public ResponseEntity patchEvent(@RequestParam(value = "eventId") String eventId,
                                      @RequestParam(value = "calendarId") String calendarId,

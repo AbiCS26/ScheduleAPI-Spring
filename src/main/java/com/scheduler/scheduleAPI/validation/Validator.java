@@ -1,4 +1,4 @@
-package inputs;
+package com.scheduler.scheduleAPI.validation;
 
 import com.scheduler.scheduleAPI.model.Contact;
 
@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Validation {
+public class Validator {
     public static boolean checkString(String data, String fieldName) {
         if (data == null)
             throw new InputMismatchException(fieldName + " is required");

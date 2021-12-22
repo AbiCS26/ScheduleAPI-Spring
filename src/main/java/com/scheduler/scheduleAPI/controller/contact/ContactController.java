@@ -80,7 +80,7 @@ public class ContactController {
     @DeleteMapping(value = "/{id}")
     @PreAuthorize("hasAuthority('contact:write')")
     public ResponseEntity deleteGuestContact(@PathVariable String id) {
-        contactService.deleteGuestContactById(id);
+        contactService.deleteContactById(id);
 
         return responseHandler.generateResponse(
                 "Contact deleted successfully",

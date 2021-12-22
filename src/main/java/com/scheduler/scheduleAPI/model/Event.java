@@ -4,9 +4,9 @@ package com.scheduler.scheduleAPI.model;
 import com.google.appengine.api.datastore.Text;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.*;
+import com.scheduler.scheduleAPI.inputs.IdGenerator;
 import com.scheduler.scheduleAPI.service.ObjectifyOperations;
-import inputs.IdGenerator;
-import inputs.Validation;
+import com.scheduler.scheduleAPI.validation.Validator;
 
 import java.util.Calendar;
 import java.util.List;
@@ -95,7 +95,7 @@ public class Event {
     }
 
     public Event setParticipants(List<Contact> participants) {
-        Validation.checkParticipantList(participants);
+        Validator.checkParticipantList(participants);
 
         this.participants = participants;
         return this;
@@ -106,7 +106,7 @@ public class Event {
     }
 
     public Event setParticipantIds(List<String> participantIds) {
-        Validation.checkParticipantIds(participantIds);
+        Validator.checkParticipantIds(participantIds);
         new ObjectifyOperations().checkForParticipants(participantIds);
 
         this.participantIds = participantIds;
@@ -153,20 +153,20 @@ public class Event {
         }
 
         public Builder setCalendar(String calendar) {
-            Validation.checkString(calendar, "Calendar ID");
+            Validator.checkString(calendar, "Calendar ID");
             this.calendar = Key.create(com.scheduler.scheduleAPI.model.Calendar.class, calendar);
             return this;
         }
 
         public Builder setParticipantIds(List<String> participantIds) {
-            Validation.checkParticipantIds(participantIds);
+            Validator.checkParticipantIds(participantIds);
             new ObjectifyOperations().checkForParticipants(participantIds);
             this.participantIds = participantIds;
             return this;
         }
 
         public Builder setName(String name) {
-            Validation.checkString(name, "Event Name");
+            Validator.checkString(name, "Event Name");
             this.name = name;
             return this;
         }
@@ -182,7 +182,7 @@ public class Event {
         }
 
         public Builder setStartsAt(long eventTime) {
-            Validation.checkNumber(eventTime, "Start Time");
+            Validator.checkNumber(eventTime, "Start Time");
 
             Calendar calendar = Calendar.getInstance();
             calendar.setTimeInMillis(eventTime);
@@ -191,7 +191,7 @@ public class Event {
         }
 
         public Builder setDuration(long duration) {
-            Validation.checkNumber(duration, "Duration");
+            Validator.checkNumber(duration, "Duration");
             this.duration = duration;
             return this;
         }

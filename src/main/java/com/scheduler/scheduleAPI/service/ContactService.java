@@ -1,6 +1,7 @@
 package com.scheduler.scheduleAPI.service;
 
 import com.scheduler.scheduleAPI.model.Contact;
+import com.scheduler.scheduleAPI.validation.PermissionChecker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -9,43 +10,51 @@ import java.util.List;
 @Service
 public class ContactService {
 
-    @Autowired
     private final ObjectifyOperations objectifyOperations;
-    @Autowired
-    private final MyUser myUser;
+    private final ModelBuilder modelBuilder;
+    private final PermissionChecker permissionChecker;
 
-    public ContactService(ObjectifyOperations objectifyOperations, MyUser myUser) {
+    @Autowired
+    public ContactService(ObjectifyOperations objectifyOperations,
+                          ModelBuilder modelBuilder,
+                          PermissionChecker permissionChecker) {
         this.objectifyOperations = objectifyOperations;
-        this.myUser = myUser;
+        this.modelBuilder = modelBuilder;
+        this.permissionChecker = permissionChecker;
     }
 
 
     public String storeGuestContact(Contact c) {
-        Contact contact = buildNewGuestContact(c);
+        Contact contact = modelBuilder.buildNewGuestContact(c);
         objectifyOperations.storeEntity(contact);
         return contact.getEmail();
     }
 
     public String storeOwnerContact(Contact c) {
-        Contact contact = buildNewOwnerContact(c);
+        Contact contact = modelBuilder.buildNewOwnerContact(c);
         objectifyOperations.storeEntity(contact);
         return contact.getEmail();
     }
 
     public String modifyGuestContact(Contact c, String id) {
-        Contact contact = buildModifiedGuestContact(c, id);
-        objectifyOperations.storeEntity(contact);
-        return contact.getEmail();
+        permissionChecker.hasPermissionForContact(id);
+
+        Contact con = modelBuilder.buildModifiedGuestContact(c, id);
+        objectifyOperations.storeEntity(con);
+        return con.getEmail();
     }
 
     public String modifyOwnerContact(Contact c, String id) {
-        Contact contact = buildModifiedOwnerContact(c, id);
-        objectifyOperations.storeEntity(contact);
-        return contact.getEmail();
+        permissionChecker.hasPermissionForContact(id);
+
+        Contact con = modelBuilder.buildModifiedOwnerContact(c, id);
+        objectifyOperations.storeEntity(con);
+        return con.getEmail();
     }
+    
+    public void deleteContactById(String id) {
+        permissionChecker.hasPermissionForContact(id);
 
-
-    public void deleteGuestContactById(String id) {
         objectifyOperations.deleteEntity(id, Contact.class);
     }
 
@@ -55,54 +64,5 @@ public class ContactService {
 
     public Contact getContactById(String id) {
         return objectifyOperations.getEntityById(id, Contact.class);
-    }
-
-    private Contact buildNewGuestContact(Contact contact) {
-        String ownerId = objectifyOperations.getContactEntityByEmail(myUser.getCurrentUser().getUsername()).getId();
-        System.out.println(ownerId);
-        return Contact.newBuilder()
-                .setId()
-                .setName(contact.getName())
-                .setEmail(contact.getEmail())
-                .setMobileNumber(contact.getMobileNumber())
-                .setPassword(contact.getPassword())
-                .setOwnerId(ownerId)
-                .setGuestRole()
-                .build();
-    }
-
-    private Contact buildNewOwnerContact(Contact contact) {
-        return Contact.newBuilder()
-                .setId()
-                .setName(contact.getName())
-                .setEmail(contact.getEmail())
-                .setMobileNumber(contact.getMobileNumber())
-                .setPassword(contact.getPassword())
-                .setOwnerRole()
-                .build();
-    }
-
-    private Contact buildModifiedGuestContact(Contact contact, String id) {
-        String ownerId = objectifyOperations.getContactEntityByEmail(myUser.getCurrentUser().getUsername()).getId();
-        return Contact.newBuilder()
-                .setId(id)
-                .setEmail(contact.getEmail())
-                .setName(contact.getName())
-                .setMobileNumber(contact.getMobileNumber())
-                .setPassword(contact.getPassword())
-                .setOwnerId(ownerId)
-                .setGuestRole()
-                .build();
-    }
-
-    private Contact buildModifiedOwnerContact(Contact contact, String id) {
-        return Contact.newBuilder()
-                .setId(id)
-                .setEmail(contact.getEmail())
-                .setName(contact.getName())
-                .setMobileNumber(contact.getMobileNumber())
-                .setPassword(contact.getPassword())
-                .setOwnerRole()
-                .build();
     }
 }

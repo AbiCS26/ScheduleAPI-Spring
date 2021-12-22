@@ -2,7 +2,7 @@ package com.scheduler.scheduleAPI.model;
 
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
-import inputs.IdGenerator;
+import com.scheduler.scheduleAPI.inputs.IdGenerator;
 
 import java.time.ZoneId;
 

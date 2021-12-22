@@ -1,9 +1,8 @@
 package com.scheduler.scheduleAPI.service;
 
 import com.scheduler.scheduleAPI.model.Calendar;
+import com.scheduler.scheduleAPI.validation.PermissionChecker;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,11 +10,17 @@ import java.util.List;
 @Service
 public class CalendarService {
 
-    @Autowired
     private final ObjectifyOperations objectifyOperations;
+    private final ModelBuilder modelBuilder;
+    private final PermissionChecker permissionChecker;
 
-    public CalendarService(ObjectifyOperations objectifyOperations) {
+    @Autowired
+    public CalendarService(ObjectifyOperations objectifyOperations,
+                           ModelBuilder modelBuilder,
+                           PermissionChecker permissionChecker) {
         this.objectifyOperations = objectifyOperations;
+        this.modelBuilder = modelBuilder;
+        this.permissionChecker = permissionChecker;
     }
 
     public List<Calendar> getAllCalendars() {
@@ -27,44 +32,23 @@ public class CalendarService {
     }
 
     public String storeCalendar(Calendar c) {
-        Calendar calendar = buildNewCalendar(c);
+        Calendar calendar = modelBuilder.buildNewCalendar(c);
         objectifyOperations.storeEntity(calendar);
         return calendar.getId();
     }
 
     public String modifyCalendar(Calendar c, String id) {
-        Calendar calendar = buildModifiedCalendar(c, id);
-        objectifyOperations.storeEntity(calendar);
-        return calendar.getId();
+        permissionChecker.hasPermissionForCalendar(id);
+
+        Calendar cal = modelBuilder.buildModifiedCalendar(c, id);
+        objectifyOperations.storeEntity(cal);
+        return cal.getId();
     }
 
     public void deleteCalendarById(String id) {
+        permissionChecker.hasPermissionForCalendar(id);
+
         objectifyOperations.deleteEntity(id, Calendar.class);
-    }
-
-
-    private Calendar buildModifiedCalendar(Calendar calendar, String id) {
-        UserDetails userDetail = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        return Calendar.newBuilder()
-                .setOwnerId(userDetail.getUsername())
-                .setId(id)
-                .setDateFormat(Calendar.DateFormat.valueOf(calendar.getDateFormat()))
-                .setTimeFormat(Calendar.TimeFormat.valueOf(calendar.getTimeFormat()))
-                .setTimezone(calendar.getTimezone())
-                .build();
-    }
-
-    private Calendar buildNewCalendar(Calendar calendar) {
-        UserDetails userDetail = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        return Calendar.newBuilder()
-                .setOwnerId(userDetail.getUsername())
-                .setId()
-                .setDateFormat(Calendar.DateFormat.valueOf(calendar.getDateFormat()))
-                .setTimeFormat(Calendar.TimeFormat.valueOf(calendar.getTimeFormat()))
-                .setTimezone(calendar.getTimezone())
-                .build();
     }
 
 }

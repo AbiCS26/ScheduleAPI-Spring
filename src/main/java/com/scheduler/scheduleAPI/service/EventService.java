@@ -1,9 +1,8 @@
 package com.scheduler.scheduleAPI.service;
 
-import com.scheduler.scheduleAPI.exception.PermissionException;
 import com.scheduler.scheduleAPI.model.Event;
+import com.scheduler.scheduleAPI.validation.PermissionChecker;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.InputMismatchException;
@@ -12,27 +11,23 @@ import java.util.List;
 @Service
 public class EventService {
 
-    @Autowired
     private final ObjectifyOperations objectifyOperations;
-    @Autowired
-    private final MyUser myUser;
+    private final ModelBuilder modelBuilder;
+    private final PermissionChecker permissionChecker;
 
-    public EventService(ObjectifyOperations objectifyOperations, MyUser myUser) {
+    @Autowired
+    public EventService(ObjectifyOperations objectifyOperations,
+                        ModelBuilder modelBuilder,
+                        PermissionChecker permissionChecker) {
         this.objectifyOperations = objectifyOperations;
-        this.myUser = myUser;
+        this.modelBuilder = modelBuilder;
+        this.permissionChecker = permissionChecker;
     }
 
     public void deleteEvent(String eventId, String calendarId) {
-        UserDetails userDetails = myUser.getCurrentUser();
-        Event event = objectifyOperations.getEventById(eventId, calendarId);
+        permissionChecker.hasPermissionForEvent(eventId, calendarId);
 
-        if (event == null)
-            throw new InputMismatchException("Event with ID: " + eventId + " is not present");
-
-        if (event.getCreatedBy().equals(userDetails.getUsername()))
-            objectifyOperations.deleteEntity(eventId, Event.class);
-        else
-            throw new PermissionException("User is not allowed to delete this event");
+        objectifyOperations.deleteEntity(eventId, Event.class);
     }
 
     public List<Event> getAllEvents() {
@@ -40,15 +35,23 @@ public class EventService {
     }
 
     public String storeEvent(Event e) {
-        Event event = buildNewEvent(e);
+        Event event = modelBuilder.buildNewEvent(e);
         objectifyOperations.storeEntity(event);
         return event.getId();
     }
 
     public String modifyEvent(String eventId, String calendarId, Event e) {
-        Event event = buildModifiedEvent(eventId, calendarId, e);
+        permissionChecker.hasPermissionForEvent(eventId, calendarId);
+
+        Event event = modelBuilder.buildModifiedEvent(eventId, calendarId, e);
         objectifyOperations.storeEntity(event);
         return event.getId();
+    }
+
+    public void addParticipants(String eventId, String calendarId, List<String> participants) {
+        permissionChecker.hasPermissionForEvent(eventId, calendarId);
+
+        objectifyOperations.transactParticipants(eventId, calendarId, participants);
     }
 
     public Event getEventById(String eventId, String calendarId) {
@@ -84,41 +87,5 @@ public class EventService {
 
     public List<Event> getEventByEmail(String email) {
         return objectifyOperations.getEventEntityByEmail(email);
-    }
-
-
-    public Event buildNewEvent(Event e) {
-
-        return Event.newBuilder()
-                .setId()
-                .setName(e.getName())
-                .setStartsAt(e.getStartsAt())
-                .setDuration(e.getDuration())
-                .setParticipantIds(e.getParticipantIds())
-                .setCalendar(e.getCalendarId())
-                .setText(e.getDescription())
-                .setCreatedBy(myUser.getCurrentUser().getUsername())
-                .setCreatedDate()
-                .build();
-    }
-
-    public Event buildModifiedEvent(String eventId, String calendarId, Event e) {
-        long createdTime = objectifyOperations.getEventById(eventId, calendarId).getCreatedDate();
-
-        return Event.newBuilder()
-                .setName(e.getName())
-                .setStartsAt(e.getStartsAt())
-                .setDuration(e.getDuration())
-                .setParticipantIds(e.getParticipantIds())
-                .setId(eventId)
-                .setCalendar(calendarId)
-                .setCreatedBy(myUser.getCurrentUser().getUsername())
-                .setCreatedDate(createdTime)
-                .setModifiedDate()
-                .build();
-    }
-
-    public void addParticipants(String eventId, String calendarId, List<String> participants) {
-        objectifyOperations.transactParticipants(eventId, calendarId, participants);
     }
 }

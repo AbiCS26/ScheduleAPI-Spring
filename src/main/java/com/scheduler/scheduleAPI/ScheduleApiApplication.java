@@ -24,18 +24,4 @@ public class ScheduleApiApplication {
         ObjectifyService.register(Contact.class);
         ObjectifyService.register(Calendar.class);
     }
-
-//    @Bean
-//    public WebMvcConfigurer corsConfigurer() {
-//        System.out.println("allow origin: " + "http://localhost:8080");
-//        return new WebMvcConfigurerAdapter() {
-//            @Override
-//            public void addCorsMappings(CorsRegistry registry) {
-//                registry.addMapping("/**")
-//                        //.allowedOrigins("http://localhost")
-//                        .allowedOrigins("http://localhost:8080")
-//                        .allowedMethods("PUT", "DELETE", "GET", "POST", "PATCH");
-//            }
-//        };
-//    }
 }

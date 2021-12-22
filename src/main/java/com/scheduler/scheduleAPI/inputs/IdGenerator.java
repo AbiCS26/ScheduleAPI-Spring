@@ -1,4 +1,4 @@
-package inputs;
+package com.scheduler.scheduleAPI.inputs;
 
 import java.util.UUID;
 
